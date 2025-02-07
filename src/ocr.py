@@ -2,32 +2,46 @@ from PIL import Image
 import pytesseract
 import json
 import easyocr
+from io import BytesIO
 
-def extraer_texto_tesseract(imagen_path):
-    # Cargar la imagen
-    imagen = Image.open(imagen_path)
+def extract_text_tesseract(file):
+    """
+    Extract text from an image using Tesseract OCR and save it in a JSON file.
     
-    # Extraer texto con Tesseract
-    texto = pytesseract.image_to_string(imagen)
-    
-    # Guardar en formato JSON
-    salida = {"texto_extraido": texto}
-    with open('output/texto_extraido.json', 'w', encoding='utf-8') as f:
-        json.dump(salida, f, indent=4, ensure_ascii=False)
-    
-    print(f"Texto extraído con Tesseract y guardado en 'output/texto_extraido.json'.")
+    Parameters:
+    - file (BytesIO): The uploaded image as in-memory file.
+    """
+    try:
+        # Usar directamente el objeto BytesIO con Image.open()
+        image = Image.open(file)  # Abre la imagen desde el objeto BytesIO
+        text = pytesseract.image_to_string(image)
 
-def extraer_texto_easyocr(imagen_path):
-    # Inicializar EasyOCR
-    lector = easyocr.Reader(['es'])
+        output = {"extracted_text": text}
+        with open('output/extracted_text.json', 'w', encoding='utf-8') as f:
+            json.dump(output, f, indent=4, ensure_ascii=False)
+
+        print(f"Text extracted using Tesseract and saved in 'output/extracted_text.json'.")
+    except Exception as e:
+        print(f"Error extracting text with Tesseract: {e}")
+
+
+def extract_text_easyocr(file):
+    """
+    Extract text from an image using EasyOCR and save it in a JSON file.
     
-    # Extraer texto
-    resultado = lector.readtext(imagen_path)
-    texto = " ".join([res[1] for res in resultado])
-    
-    # Guardar en formato JSON
-    salida = {"texto_extraido": texto}
-    with open('output/texto_extraido_easyocr.json', 'w', encoding='utf-8') as f:
-        json.dump(salida, f, indent=4, ensure_ascii=False)
-    
-    print(f"Texto extraído con EasyOCR y guardado en 'output/texto_extraido_easyocr.json'.")
+    Parameters:
+    - file (BytesIO): The uploaded image as in-memory file.
+    """
+    try:
+        reader = easyocr.Reader(['es'])
+        image = Image.open(file)  # Usamos el objeto BytesIO directamente
+        result = reader.readtext(image)
+        text = " ".join([res[1] for res in result])
+
+        output = {"extracted_text": text}
+        with open('output/extracted_text_easyocr.json', 'w', encoding='utf-8') as f:
+            json.dump(output, f, indent=4, ensure_ascii=False)
+
+        print(f"Text extracted using EasyOCR and saved in 'output/extracted_text_easyocr.json'.")
+    except Exception as e:
+        print(f"Error extracting text with EasyOCR: {e}")
